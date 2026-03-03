@@ -3,6 +3,7 @@ from pygame.locals import *
 import random
 
 pygame.init()
+pygame.mixer.init()
 
 window_screen_width = 864
 window_screen_height = 936
@@ -29,6 +30,11 @@ background_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_ass
 ground_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/ground_img.png')
 button_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/restart_button_img.png')
 
+flap_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_wing.wav')
+hit_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_hit.wav')
+dead_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_die.wav')
+score_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_point.wav')
+
 def draw_text(text, font, text_color, x, y):
     
     image = font.render(text, True, text_color)
@@ -40,6 +46,7 @@ def reset_game():
     
     flappy_bird.rect.x = 100
     flappy_bird.rect.y = int(window_screen_height / 2)
+    flappy_bird.velocity = 0
     
     user_score = 0
     
@@ -86,6 +93,7 @@ class bird(pygame.sprite.Sprite):
                 
                 self.clicked = True
                 self.velocity = -10
+                flap_sound.play()
             
             if pygame.mouse.get_pressed()[0] == 0:
                 
@@ -195,15 +203,24 @@ while run_window:
             if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
                 
                 user_score += 1
+                score_sound.play()
                 user_pass_pipe = False
 
     draw_text(str(user_score), font, color_white, int(window_screen_width / 2), 20)
 
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or flappy_bird.rect.top < 0:
         
+        if game_ends == False:
+            
+            hit_sound.play()
+        
         game_ends = True
 
     if flappy_bird.rect.bottom >= 768:
+        
+        if game_ends == False:
+            
+            dead_sound.play()
         
         game_ends = True
         flying_movement = False
