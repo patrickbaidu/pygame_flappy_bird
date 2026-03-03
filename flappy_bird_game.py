@@ -9,6 +9,9 @@ pygame.mixer.init()
 window_screen_width = 864
 window_screen_height = 936
 
+flappy_bird_icon_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/flappy_bird_icon.png')
+pygame.display.set_icon(flappy_bird_icon_image)
+
 window_screen = pygame.display.set_mode((window_screen_width, window_screen_height))
 pygame.display.set_caption('Flappy Bird')
 
