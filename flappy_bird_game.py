@@ -70,7 +70,9 @@ def draw_text(text, font, text_color, x_axis, y_axis, center = False):
     image = font.render(text, True, text_color)
     
     if center:
+        
         x_axis = (window_screen_height // 2) - (image.get_width() // 2)
+    
     window_screen.blit(image, (x_axis, y_axis))
 
 def reset_game():
