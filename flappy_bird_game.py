@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import random
+import os
 
 pygame.init()
 pygame.mixer.init()
@@ -12,6 +13,7 @@ window_screen = pygame.display.set_mode((window_screen_width, window_screen_heig
 pygame.display.set_caption('Flappy Bird')
 
 font = pygame.font.SysFont('Bauhaus 93', 60)
+score_font = pygame.font.SysFont('Bauhaus 93', 60)
 color_white = (255, 255, 255)
 
 clock = pygame.time.Clock()
@@ -29,16 +31,33 @@ user_pass_pipe = False
 background_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/background_img.png')
 ground_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/ground_img.png')
 button_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/restart_button_img.png')
+instruction_manual_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/user_manual_img.png')
+game_over_image = pygame.image.load('flappy_bird_asset_pack/flappy_bird_img_assets/game_over_img.png')
 
 flap_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_wing.wav')
 hit_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_hit.wav')
 dead_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_die.wav')
 score_sound = pygame.mixer.Sound('flappy_bird_asset_pack/flappy_bird_sound_assets/audio_point.wav')
 
-def draw_text(text, font, text_color, x, y):
+high_score_file = 'high_score.txt'
+
+if os.path.exists(high_score_file):
+    
+    with open(high_score_file, 'r') as new_file:
+        
+        high_score = int(new_file.read())
+
+else:
+    
+    high_score = 0
+
+def draw_text(text, font, text_color, x_axis, y_axis, center = False):
     
     image = font.render(text, True, text_color)
-    window_screen.blit(image, (x, y))
+    
+    if center:
+        x_axis = (window_screen_height // 2) - (image.get_width() // 2)
+    window_screen.blit(image, (x_axis, y_axis))
 
 def reset_game():
     
@@ -187,10 +206,14 @@ while run_window:
     
     bird_group.draw(window_screen)
     bird_group.update()
-    
     pipe_group.draw(window_screen)
 
     window_screen.blit(ground_image, (scroll_ground, 768))
+
+    if flying_movement == False and game_ends == False:
+        
+        instantiate_x_axis = (window_screen_width // 2) - (instruction_manual_image.get_width() // 2)
+        window_screen.blit(instruction_manual_image, (instantiate_x_axis, window_screen_height // 2 - 150))
 
     if len(pipe_group) > 0:
         
@@ -206,13 +229,21 @@ while run_window:
                 score_sound.play()
                 user_pass_pipe = False
 
-    draw_text(str(user_score), font, color_white, int(window_screen_width / 2), 20)
+    draw_text(str(user_score), font, color_white, 0, 20, center = True)
 
     if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or flappy_bird.rect.top < 0:
         
         if game_ends == False:
             
             hit_sound.play()
+        
+            if user_score > high_score:
+                
+                high_score = user_score
+                
+                with open(high_score_file, 'w') as new_file:
+                    
+                    new_file.write(str(high_score))
         
         game_ends = True
 
@@ -221,6 +252,14 @@ while run_window:
         if game_ends == False:
             
             dead_sound.play()
+            
+            if user_score > high_score:
+                
+                high_score = user_score
+                
+                with open(high_score_file, 'w') as new_file:
+                    
+                    new_file.write(str(high_score))
         
         game_ends = True
         flying_movement = False
@@ -250,6 +289,13 @@ while run_window:
         pipe_group.update()
 
     if game_ends == True:
+        
+        game_over_x_axis = (window_screen_width // 2) - (game_over_image.get_width() // 2)
+        window_screen.blit(game_over_image, (game_over_x_axis, window_screen_height // 2 - 300))
+        
+        draw_text(f'HIGH SCORE: {high_score}', score_font, color_white, 0, window_screen_height // 3 - 50, center = True)
+        
+        restart_button.rect.x = (window_screen_width // 2) - (button_image.get_width() // 2)
         
         if restart_button.draw() == True:
             
